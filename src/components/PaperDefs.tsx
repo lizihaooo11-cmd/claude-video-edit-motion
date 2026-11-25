@@ -1,22 +1,31 @@
 import React from 'react';
-import { useCurrentFrame } from 'remotion';
+import { staticFile, useCurrentFrame } from 'remotion';
 
 /**
- * Provides subtle hand-drawn line boil (stepped every 3 frames = 10fps boil)
- * and warm paper texture defs for the entire SVG/HTML composition.
+ * Provides bundled handwritten font (@font-face), subtle hand-drawn line boil
+ * (stepped every 4 frames), and warm paper texture defs.
  */
 export const PaperDefs: React.FC = () => {
   const frame = useCurrentFrame();
-  // Step seed every 4 frames for authentic hand-drawn 2D boil without jittering text
-  const boilSeed = Math.floor(frame / 4) % 7 + 1;
+  const boilSeed = (Math.floor(frame / 4) % 7) + 1;
 
   return (
-    <svg
-      width={0}
-      height={0}
-      style={{ position: 'absolute', pointerEvents: 'none' }}
-      aria-hidden="true"
-    >
+    <>
+      <style>{`
+        @font-face {
+          font-family: 'XiaoKeHand';
+          src: url('${staticFile('fonts/ZCOOLKuaiLe-Regular.ttf')}') format('truetype');
+          font-weight: 100 900;
+          font-style: normal;
+          font-display: block;
+        }
+      `}</style>
+      <svg
+        width={0}
+        height={0}
+        style={{ position: 'absolute', pointerEvents: 'none' }}
+        aria-hidden="true"
+      >
       <defs>
         <filter id="hand-drawn-boil" x="-4%" y="-4%" width="108%" height="108%">
           <feTurbulence
@@ -74,5 +83,6 @@ export const PaperDefs: React.FC = () => {
         </filter>
       </defs>
     </svg>
+    </>
   );
 };

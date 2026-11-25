@@ -63,7 +63,7 @@ export const COLORS = {
 };
 
 export const FONT_HAND =
-  '"PingFang SC", "Hiragino Maru Gothic ProN", "Yuanti SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif';
+  '"XiaoKeHand", "Marker Felt", "Noteworthy", "PingFang SC", "Noto Sans SC", cursive, sans-serif';
 
 export const FONT_MONO =
   '"SF Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas", monospace';

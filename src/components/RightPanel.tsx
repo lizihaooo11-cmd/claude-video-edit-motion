@@ -1,5 +1,6 @@
 import React from 'react';
 import { COLORS, FONT_HAND, FONT_MONO } from '../theme';
+import { SparkleIcon } from './HandIcons';
 
 interface RightPanelProps {
   sparkle: number; // 0..100
@@ -88,7 +89,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         }}
       >
         <span>调整</span>
-        <span style={{ color: COLORS.yellow, fontSize: 18 }}>✦</span>
+        <SparkleIcon size={18} />
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 19 }}>

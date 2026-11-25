@@ -1,5 +1,13 @@
 import React from 'react';
 import { COLORS, FONT_HAND } from '../theme';
+import {
+  DissolveIcon,
+  FlashIcon,
+  FlipIcon,
+  SlideIcon,
+  SwirlIcon,
+  ZoomIcon,
+} from './HandIcons';
 
 export type LeftTab = 'media' | 'transition' | 'text';
 
@@ -110,12 +118,12 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({ activeTab, highlightedInde
   ];
 
   const transitions = [
-    { name: '旋转', bg: '#F8EFF7', icon: '🌀' },
-    { name: '翻页', bg: '#FBF7E8', icon: '📄' },
-    { name: '闪黑', bg: '#F9E6F0', icon: '⚡' },
-    { name: '缩放', bg: '#E7F4FC', icon: '🔍' },
-    { name: '滑动', bg: '#EAF7EC', icon: '➡️' },
-    { name: '溶解', bg: '#EEF1FA', icon: '✨' },
+    { name: '旋转', bg: '#F8EFF7', icon: <SwirlIcon size={26} /> },
+    { name: '翻页', bg: '#FBF7E8', icon: <FlipIcon size={26} /> },
+    { name: '闪黑', bg: '#F9E6F0', icon: <FlashIcon size={26} /> },
+    { name: '缩放', bg: '#E7F4FC', icon: <ZoomIcon size={26} /> },
+    { name: '滑动', bg: '#EAF7EC', icon: <SlideIcon size={26} /> },
+    { name: '溶解', bg: '#EEF1FA', icon: <DissolveIcon size={26} /> },
   ];
 
   return (

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { COLORS, FONT_HAND } from '../theme';
+import { CommentIcon, HeartIcon, ShareIcon } from './HandIcons';
 
 export type PhoneScene =
   | 'black'
@@ -553,6 +554,18 @@ export const PhonePreview: React.FC<PhonePreviewProps> = ({
                 </defs>
                 <rect width={182} height={286} fill="url(#discoSky)" />
 
+                {/* Translucent rotating disco spotlight beams */}
+                <g opacity={0.18}>
+                  {[-55, -24, 6, 36, 66].map((deg, idx) => (
+                    <polygon
+                      key={idx}
+                      points="91,56 64,286 118,286"
+                      fill="#FFF5E1"
+                      transform={`rotate(${deg + Math.sin(frame * 0.08 + idx) * 8} 91 56)`}
+                    />
+                  ))}
+                </g>
+
                 {/* Perspective checkered dance floor */}
                 <polygon points="0,192 182,192 182,286 0,286" fill="#2E2B5C" />
                 {[0, 1, 2, 3, 4].map((row) =>
@@ -812,23 +825,23 @@ export const PhonePreview: React.FC<PhonePreviewProps> = ({
                 </div>
 
                 {/* Heart */}
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 18, lineHeight: 1 }}>🩷</div>
-                  <div style={{ fontFamily: FONT_HAND, fontSize: 9, color: '#FFF', fontWeight: 700, textShadow: '0 1px 2px #000' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <HeartIcon size={22} />
+                  <div style={{ fontFamily: FONT_HAND, fontSize: 10, color: '#FFF', fontWeight: 700, textShadow: '0 1px 2px #000', marginTop: 1 }}>
                     10.2w
                   </div>
                 </div>
                 {/* Comment */}
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 16, lineHeight: 1 }}>💬</div>
-                  <div style={{ fontFamily: FONT_HAND, fontSize: 9, color: '#FFF', fontWeight: 700, textShadow: '0 1px 2px #000' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <CommentIcon size={21} />
+                  <div style={{ fontFamily: FONT_HAND, fontSize: 10, color: '#FFF', fontWeight: 700, textShadow: '0 1px 2px #000', marginTop: 1 }}>
                     2333
                   </div>
                 </div>
                 {/* Share */}
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 16, lineHeight: 1 }}>↪️</div>
-                  <div style={{ fontFamily: FONT_HAND, fontSize: 9, color: '#FFF', fontWeight: 700, textShadow: '0 1px 2px #000' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <ShareIcon size={21} />
+                  <div style={{ fontFamily: FONT_HAND, fontSize: 10, color: '#FFF', fontWeight: 700, textShadow: '0 1px 2px #000', marginTop: 1 }}>
                     分享
                   </div>
                 </div>

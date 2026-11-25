@@ -10,8 +10,10 @@ import { TIMING } from '../theme';
 export const SoundTrack: React.FC = () => {
   return (
     <>
-      {/* Upbeat lo-fi pop BGM bed */}
-      <Audio src={staticFile('audio/soundtrack.wav')} volume={0.55} />
+      {/* Upbeat CC0 Freesound playful BGM (fs:464914, starts as editor opens) */}
+      <Sequence from={38}>
+        <Audio src={staticFile('audio/bgm/bgm_cc0.mp3')} volume={0.58} />
+      </Sequence>
 
       {/* 1. Intro mechanical keyboard typing */}
       <Sequence from={TIMING.INTRO_TYPE_START} durationInFrames={32}>

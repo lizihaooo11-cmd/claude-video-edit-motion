@@ -30,45 +30,45 @@ export const MainVideo: React.FC = () => {
   let camY = 0;
 
   if (frame >= 50 && frame < 140) {
-    // Zoom in slightly to Left Panel + Timeline during clip dragging
+    // Bold zoom into Left Panel + Timeline during clip dragging
     const pIn = easeInOutCubic(prog(frame, 50, 62));
     const pOut = easeInOutCubic(prog(frame, 130, 140));
     const amt = pIn * (1 - pOut);
-    camScale = 1 + 0.14 * amt;
-    camX = 76 * amt;
-    camY = -12 * amt;
+    camScale = 1 + 0.24 * amt;
+    camX = 112 * amt;
+    camY = -16 * amt;
   } else if (frame >= 158 && frame < 236) {
     // Focus on Timeline + Phone during blurry ramen cut
     const pIn = easeInOutCubic(prog(frame, 158, 170));
     const pOut = easeInOutCubic(prog(frame, 226, 236));
     const amt = pIn * (1 - pOut);
-    camScale = 1 + 0.12 * amt;
-    camX = 24 * amt;
-    camY = -36 * amt;
+    camScale = 1 + 0.22 * amt;
+    camX = 36 * amt;
+    camY = -52 * amt;
   } else if (frame >= 350 && frame < 472) {
-    // Slight zoom into center-bottom for Subtitle + Ctrl+Z gag
+    // Bold zoom into center-bottom for Subtitle + Ctrl+Z gag
     const pIn = easeInOutCubic(prog(frame, 350, 364));
     const pOut = easeInOutCubic(prog(frame, 462, 472));
     const amt = pIn * (1 - pOut);
-    camScale = 1 + 0.15 * amt;
-    camX = 18 * amt;
-    camY = -20 * amt;
+    camScale = 1 + 0.24 * amt;
+    camX = 28 * amt;
+    camY = -28 * amt;
   } else if (frame >= 472 && frame < 596) {
     // Pan right toward Phone + Right Sliders ("调整")
     const pIn = easeInOutCubic(prog(frame, 472, 486));
     const pOut = easeInOutCubic(prog(frame, 584, 596));
     const amt = pIn * (1 - pOut);
-    camScale = 1 + 0.22 * amt;
-    camX = -132 * amt;
-    camY = 26 * amt;
+    camScale = 1 + 0.34 * amt;
+    camX = -180 * amt;
+    camY = 34 * amt;
   } else if (frame >= 714 && frame < 782) {
-    // Zoom slightly toward top-right Export button for 99.99% stall gag
+    // Zoom toward top-right Export button for 99.99% stall gag
     const pIn = easeInOutCubic(prog(frame, 714, 728));
     const pOut = easeInOutCubic(prog(frame, 774, 782));
     const amt = pIn * (1 - pOut);
-    camScale = 1 + 0.18 * amt;
-    camX = -112 * amt;
-    camY = 48 * amt;
+    camScale = 1 + 0.28 * amt;
+    camX = -158 * amt;
+    camY = 62 * amt;
   }
 
   // ---- 2. LEFT PANEL TAB & HIGHLIGHT ----

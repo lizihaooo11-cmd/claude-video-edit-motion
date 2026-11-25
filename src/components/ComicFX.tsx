@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { COLORS, FONT_HAND, FONT_MONO, easeOutBack, easeOutCubic, prog } from '../theme';
+import { FlipIcon, SwirlIcon, ZoomIcon } from './HandIcons';
 
 const ComicStampText: React.FC<{
   text: string;
@@ -53,9 +54,9 @@ export const ComicFX: React.FC = () => {
 
   // 2. Basketball Transition Throw Arc (frames 254-332)
   const throws = [
-    { start: 254, end: 278, fromX: 85, fromY: 162, toX: 298, toY: 518, icon: '🌀' },
-    { start: 282, end: 306, fromX: 205, fromY: 162, toX: 540, toY: 518, icon: '📄' },
-    { start: 308, end: 332, fromX: 205, fromY: 245, toX: 760, toY: 518, icon: '🔍' },
+    { start: 254, end: 278, fromX: 85, fromY: 162, toX: 298, toY: 518, icon: <SwirlIcon size={22} /> },
+    { start: 282, end: 306, fromX: 205, fromY: 162, toX: 540, toY: 518, icon: <FlipIcon size={22} /> },
+    { start: 308, end: 332, fromX: 205, fromY: 245, toX: 760, toY: 518, icon: <ZoomIcon size={22} /> },
   ];
 
   // 3. Ctrl+Z Keycap Stomp (frames 424-466)

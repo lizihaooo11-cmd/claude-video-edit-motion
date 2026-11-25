@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { COLORS, FONT_HAND, easeOutBack, easeOutCubic, prog } from '../theme';
+import { SparkleIcon } from './HandIcons';
 
 export const OutroNote: React.FC = () => {
   const frame = useCurrentFrame();
@@ -114,7 +115,10 @@ export const OutroNote: React.FC = () => {
       <div
         style={{
           marginTop: 40,
-          textAlign: 'right',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 6,
           fontFamily: FONT_HAND,
           fontSize: 25,
           fontWeight: 700,
@@ -122,7 +126,8 @@ export const OutroNote: React.FC = () => {
           opacity: line3Op,
         }}
       >
-        — 小克收工 <span style={{ color: COLORS.yellow }}>✦</span>
+        <span>— 小克收工</span>
+        <SparkleIcon size={22} />
       </div>
     </div>
   );

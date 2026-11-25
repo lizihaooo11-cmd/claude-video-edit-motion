@@ -1,5 +1,6 @@
 import React from 'react';
 import { COLORS, FONT_HAND, FONT_MONO } from '../theme';
+import { FlipIcon, SwirlIcon, ZoomIcon } from './HandIcons';
 
 interface TimelineProps {
   clipCount: number; // 0..4
@@ -50,9 +51,9 @@ export const Timeline: React.FC<TimelineProps> = ({
   ];
 
   const transitionBadges = [
-    { x: ramenX - 2, icon: '🌀' },
-    { x: shibaX - 3, icon: '📄' },
-    { x: discoX - 3, icon: '🔍' },
+    { x: ramenX - 2, icon: <SwirlIcon size={18} /> },
+    { x: shibaX - 3, icon: <FlipIcon size={18} /> },
+    { x: discoX - 3, icon: <ZoomIcon size={18} /> },
   ];
 
   return (
