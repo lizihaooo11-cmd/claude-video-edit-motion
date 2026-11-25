@@ -161,7 +161,33 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     border: `2.2px solid ${COLORS.ink}`,
                     boxShadow: isActive ? '0 0 0 4px rgba(245,202,78,0.45)' : 'none',
                   }}
-                />
+                >
+                  {/* Starburst sparkles popping around 闪光 knob when dragged up! */}
+                  {s.key === 'sparkle' && s.ratio > 0.25 && isActive && (
+                    <svg
+                      width={56}
+                      height={56}
+                      viewBox="-28 -28 56 56"
+                      style={{ position: 'absolute', left: -21, top: -21, pointerEvents: 'none' }}
+                    >
+                      {[
+                        [-18, -14, 0.7, COLORS.yellow],
+                        [18, -12, 0.65, '#F27A9B'],
+                        [16, 15, 0.55, COLORS.yellow],
+                        [-16, 16, 0.5, '#FFFDF0'],
+                      ].map(([sx, sy, sc, fill], i) => (
+                        <path
+                          key={i}
+                          d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z"
+                          fill={String(fill)}
+                          stroke={COLORS.ink}
+                          strokeWidth={1.3}
+                          transform={`translate(${sx}, ${sy}) scale(${sc})`}
+                        />
+                      ))}
+                    </svg>
+                  )}
+                </div>
               </div>
             </div>
           );

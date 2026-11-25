@@ -182,16 +182,33 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
             </g>
           )}
 
-          {/* Main Rectangular Terracotta Body */}
+          {/* Main Rectangular Terracotta Body with painted bevel highlight & bottom shade */}
+          <defs>
+            <linearGradient id="mascotBodyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#E17D67" />
+              <stop offset="68%" stopColor={COLORS.coral} />
+              <stop offset="100%" stopColor="#BE5A45" />
+            </linearGradient>
+          </defs>
           <rect
             x={-38}
             y={-26}
             width={76}
             height={50}
             rx={7}
-            fill={COLORS.coral}
+            fill="url(#mascotBodyGrad)"
             stroke={COLORS.ink}
             strokeWidth={2.8}
+          />
+          <line
+            x1={-31}
+            y1={-21}
+            x2={29}
+            y2={-21}
+            stroke="#F6AA98"
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            opacity={0.7}
           />
 
           {/* Faces by mood */}

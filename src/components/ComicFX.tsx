@@ -83,41 +83,84 @@ export const ComicFX: React.FC = () => {
 
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 38 }}>
-      {/* Flying Dragged Clip Cards */}
+      {/* Flying Dragged Clip Cards + White Landing Dust Puffs */}
       {flyingClips.map((fc, idx) => {
-        if (frame < fc.start || frame > fc.end) return null;
+        const isFlying = frame >= fc.start && frame <= fc.end;
+        const isLanding = frame > fc.end && frame <= fc.end + 10;
         const t = easeOutCubic(prog(frame, fc.start, fc.end));
         const cx = (fc.fromX + fc.toX) / 2;
         const cy = Math.min(fc.fromY, fc.toY) - 48;
         const bx = (1 - t) * (1 - t) * fc.fromX + 2 * (1 - t) * t * cx + t * t * fc.toX;
         const by = (1 - t) * (1 - t) * fc.fromY + 2 * (1 - t) * t * cy + t * t * fc.toY;
         const rot = -12 + t * 18;
+        const lp = prog(frame, fc.end, fc.end + 10);
         return (
-          <div
-            key={`fc-${idx}`}
-            style={{
-              position: 'absolute',
-              left: bx - 44,
-              top: by - 26,
-              width: 88,
-              height: 52,
-              borderRadius: 8,
-              backgroundColor: fc.bg,
-              border: `2.2px solid ${COLORS.ink}`,
-              boxShadow: '4px 6px 0 rgba(43,37,32,0.18)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: FONT_HAND,
-              fontSize: 12,
-              fontWeight: 800,
-              color: fc.fg,
-              transform: `rotate(${rot}deg) scale(${1.05 - t * 0.1})`,
-              zIndex: 39,
-            }}
-          >
-            {fc.label}
-          </div>
+          <React.Fragment key={`fc-${idx}`}>
+            {isFlying && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: bx - 36,
+                  top: by - 46,
+                  width: 72,
+                  height: 92,
+                  borderRadius: 9,
+                  backgroundColor: fc.bg,
+                  border: `2.4px solid ${COLORS.ink}`,
+                  boxShadow: '4px 6px 0 rgba(43,37,32,0.18)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '6px 4px',
+                  boxSizing: 'border-box',
+                  transform: `rotate(${rot}deg) scale(${1.05 - t * 0.1})`,
+                  zIndex: 39,
+                }}
+              >
+                <div
+                  style={{
+                    width: 54,
+                    height: 54,
+                    borderRadius: 6,
+                    backgroundColor: 'rgba(255,255,255,0.22)',
+                    border: `1.5px solid ${COLORS.ink}`,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: FONT_HAND,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: fc.fg,
+                  }}
+                >
+                  {fc.label}
+                </span>
+              </div>
+            )}
+            {isLanding && (
+              <svg
+                width={1280}
+                height={720}
+                viewBox="0 0 1280 720"
+                style={{ position: 'absolute', inset: 0, zIndex: 39 }}
+              >
+                {[-1, 1].map((dir) => (
+                  <circle
+                    key={dir}
+                    cx={fc.toX + dir * (16 + lp * 28)}
+                    cy={fc.toY + 26 - lp * 8}
+                    r={11 * (1 - lp * 0.55)}
+                    fill="#FFFDF8"
+                    stroke={COLORS.ink}
+                    strokeWidth={1.8}
+                    opacity={1 - lp * 0.85}
+                  />
+                ))}
+              </svg>
+            )}
+          </React.Fragment>
         );
       })}
 
