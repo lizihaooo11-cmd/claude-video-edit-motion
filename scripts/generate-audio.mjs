@@ -123,18 +123,7 @@ function addBell(startSec, freq = 1046.5, amp = 0.24, dur = 0.9) {
   }
 }
 
-// 1. Typing clicks in intro (0.0s - 1.1s)
-for (let i = 0; i < 16; i++) {
-  const t = 0.08 + i * 0.058;
-  addHat(t, 0.08, 0.02);
-  addPluck(t, 0.04, 880 + (i % 4) * 110, 0.04, (i % 2 ? 0.2 : -0.2));
-}
-// UI unfold whoosh at 1.1s
-addChirp(1.05, 0.35, 220, 760, 0.16);
-addBell(1.35, 784, 0.14, 0.35);
-
-// 2. Upbeat 120 BPM bouncy lo-fi pop BGM from 1.5s to 29.8s
-// Pause / duck briefly at 25.0s - 26.0s for the 99.99% stall gag!
+// Clean 120 BPM lo-fi pop BGM bed only (real CC0 Freesound SFX are mounted frame-accurately in Remotion <SoundTrack />)
 const BPM = 120;
 const BEAT = 60 / BPM; // 0.5s
 const chords = [
@@ -147,89 +136,37 @@ const bassNotes = [48, 45, 41, 43];
 const melodyPattern = [72, 74, 76, 79, 76, 74, 72, 71, 69, 72, 74, 76, 79, 81, 79, 76];
 
 for (let step = 0; step < 114; step++) {
-  const t = 1.5 + step * (BEAT / 2); // eighth notes (0.25s)
+  const t = 1.45 + step * (BEAT / 2); // eighth notes (0.25s)
   if (t >= 29.6) break;
   // Duck during the 99.99% comedic freeze (24.9s - 25.95s)
   const inStall = t >= 24.9 && t < 25.95;
   const inFried = t >= 17.0 && t < 18.0;
   const fadeOut = t > 28.5 ? Math.max(0, (29.6 - t) / 1.1) : 1;
-  const masterGain = (inStall ? 0.18 : 1.0) * fadeOut;
+  const masterGain = (inStall ? 0.16 : 1.0) * fadeOut;
 
   const bar = Math.floor(step / 8) % 4;
   const sub = step % 8;
 
-  // Drums
   if (!inStall) {
-    if (sub === 0 || sub === 4) addKick(t, 0.22 * masterGain);
-    if (sub === 2 || sub === 6) addSnap(t, 0.11 * masterGain);
-    addHat(t, (sub % 2 === 0 ? 0.055 : 0.035) * masterGain);
+    if (sub === 0 || sub === 4) addKick(t, 0.2 * masterGain);
+    if (sub === 2 || sub === 6) addSnap(t, 0.095 * masterGain);
+    addHat(t, (sub % 2 === 0 ? 0.048 : 0.03) * masterGain);
   }
-
-  // Bass
   if (sub === 0 || sub === 3 || sub === 6) {
-    addPluck(t, 0.28, midiToFreq(bassNotes[bar]), 0.16 * masterGain, -0.15);
+    addPluck(t, 0.28, midiToFreq(bassNotes[bar]), 0.15 * masterGain, -0.15);
   }
-
-  // Chord stabs
   if (sub === 0 || sub === 4) {
     for (const n of chords[bar]) {
       const detune = inFried ? 1.04 : 1.0;
-      addPluck(t, 0.35, midiToFreq(n) * detune, 0.048 * masterGain, 0.15);
+      addPluck(t, 0.35, midiToFreq(n) * detune, 0.044 * masterGain, 0.15);
     }
   }
-
-  // Bouncy melody
   if (!inStall && (sub === 0 || sub === 2 || sub === 3 || sub === 5 || sub === 6)) {
     const mNote = melodyPattern[step % melodyPattern.length];
     const detune = inFried ? 1.06 : 1.0;
-    addPluck(t, 0.22, midiToFreq(mNote) * detune, 0.075 * masterGain, Math.sin(step) * 0.35);
+    addPluck(t, 0.22, midiToFreq(mNote) * detune, 0.068 * masterGain, Math.sin(step) * 0.35);
   }
 }
-
-// 3. Keyframe-synced Sound Effects (matching our visual beats)
-// Dragging 4 clips + BGM (2.1s, 2.7s, 3.3s, 3.8s, 4.3s)
-[2.1, 2.7, 3.3, 3.8, 4.3].forEach((t, i) => {
-  addChirp(t, 0.14, 340 + i * 50, 680 + i * 60, 0.14);
-});
-// Blurry ramen alert (5.6s)
-addChirp(5.6, 0.25, 420, 260, 0.13);
-// Scissors snip "唰!" (6.6s) + trash "哐当!" (7.15s)
-addHat(6.6, 0.24, 0.07);
-addChirp(6.6, 0.09, 1400, 420, 0.18);
-addKick(7.15, 0.3);
-addBell(7.15, 310, 0.16, 0.25);
-// Transitions basketball swish "空心入网!" (8.8s, 9.6s, 10.4s)
-[8.8, 9.6, 10.4].forEach((t) => {
-  addChirp(t, 0.22, 300, 920, 0.15);
-  addBell(t + 0.2, 880, 0.14, 0.22);
-});
-// Typo question mark (13.6s), Ctrl+Z stomp "撤销!" (14.25s), "已修正" stamp (15.05s)
-addChirp(13.6, 0.16, 480, 720, 0.15);
-addKick(14.25, 0.28);
-addChirp(14.25, 0.15, 620, 310, 0.18);
-addBell(15.05, 987.77, 0.18, 0.35);
-addBell(15.17, 1318.5, 0.18, 0.45);
-// Sliders: sparkle up (16.2s), saturation fried (17.1s), pull back (18.1s), zoom punch (19.0s)
-addChirp(16.2, 0.25, 500, 1200, 0.13);
-addChirp(17.1, 0.35, 220, 95, 0.22);
-addChirp(18.1, 0.22, 260, 520, 0.14);
-addKick(19.0, 0.28);
-addChirp(19.0, 0.18, 420, 880, 0.15);
-// Beat sync "卡点!" (21.1s) - sparkling arpeggio
-[0, 0.06, 0.12, 0.18, 0.24].forEach((dt, idx) => {
-  addBell(21.1 + dt, midiToFreq(72 + idx * 3), 0.14, 0.25);
-});
-// Export click (23.8s)
-addChirp(23.8, 0.12, 520, 780, 0.15);
-// 99.99% sweat drop tick (25.1s, 25.5s)
-addPluck(25.1, 0.06, 520, 0.1, 0);
-addPluck(25.5, 0.06, 520, 0.1, 0);
-// "叮!" Export Complete at 26.0s!
-addBell(26.0, 1046.5, 0.28, 0.9);
-addBell(26.12, 1318.5, 0.24, 0.9);
-addBell(26.24, 1567.98, 0.24, 1.0);
-// Sticky note pop (27.2s)
-addChirp(27.2, 0.18, 380, 840, 0.15);
 
 // Write 16-bit Stereo PCM WAV
 const numChannels = 2;

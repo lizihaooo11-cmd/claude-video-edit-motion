@@ -35,6 +35,14 @@ const ComicStampText: React.FC<{
 export const ComicFX: React.FC = () => {
   const frame = useCurrentFrame();
 
+  // 0. Flying Dragged Clip Cards (LeftPanel -> Timeline arc, Disney Arcs & Follow-through)
+  const flyingClips = [
+    { start: 56, end: 68, fromX: 88, fromY: 146, toX: 190, toY: 492, label: '夜景.mp4', bg: COLORS.nightSky, fg: '#FFF' },
+    { start: 76, end: 88, fromX: 204, fromY: 146, toX: 430, toY: 492, label: '拉面.mp4', bg: COLORS.ramenBg, fg: COLORS.ink },
+    { start: 95, end: 106, fromX: 88, fromY: 230, toX: 690, toY: 492, label: '柴犬.mov', bg: COLORS.shibaBg, fg: COLORS.ink },
+    { start: 112, end: 122, fromX: 204, fromY: 230, toX: 910, toY: 492, label: '小克蹦迪', bg: COLORS.discoBg, fg: '#FFF' },
+  ];
+
   // 1. Cut & Trash Gag (frames 196-228)
   const showSlash = frame >= 196 && frame <= 212;
   const slashScale = easeOutBack(prog(frame, 196, 203));
@@ -74,6 +82,44 @@ export const ComicFX: React.FC = () => {
 
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 38 }}>
+      {/* Flying Dragged Clip Cards */}
+      {flyingClips.map((fc, idx) => {
+        if (frame < fc.start || frame > fc.end) return null;
+        const t = easeOutCubic(prog(frame, fc.start, fc.end));
+        const cx = (fc.fromX + fc.toX) / 2;
+        const cy = Math.min(fc.fromY, fc.toY) - 48;
+        const bx = (1 - t) * (1 - t) * fc.fromX + 2 * (1 - t) * t * cx + t * t * fc.toX;
+        const by = (1 - t) * (1 - t) * fc.fromY + 2 * (1 - t) * t * cy + t * t * fc.toY;
+        const rot = -12 + t * 18;
+        return (
+          <div
+            key={`fc-${idx}`}
+            style={{
+              position: 'absolute',
+              left: bx - 44,
+              top: by - 26,
+              width: 88,
+              height: 52,
+              borderRadius: 8,
+              backgroundColor: fc.bg,
+              border: `2.2px solid ${COLORS.ink}`,
+              boxShadow: '4px 6px 0 rgba(43,37,32,0.18)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: FONT_HAND,
+              fontSize: 12,
+              fontWeight: 800,
+              color: fc.fg,
+              transform: `rotate(${rot}deg) scale(${1.05 - t * 0.1})`,
+              zIndex: 39,
+            }}
+          >
+            {fc.label}
+          </div>
+        );
+      })}
+
       {/* Scissors Slash "唰!" */}
       {showSlash && (
         <>
@@ -260,6 +306,28 @@ export const ComicFX: React.FC = () => {
           >
             Ctrl+Z
           </div>
+
+          {ctrlZPressed && (
+            <svg
+              width={1280}
+              height={720}
+              viewBox="0 0 1280 720"
+              style={{ position: 'absolute', inset: 0, zIndex: 41 }}
+            >
+              {[-1, 1].map((dir) => {
+                const puffP = prog(frame, 432, 444);
+                const px = 290 + dir * (36 + puffP * 38);
+                const py = 584 - puffP * 14;
+                const r = 13 * (1 - puffP * 0.45);
+                return (
+                  <g key={dir} opacity={1 - puffP * 0.85}>
+                    <circle cx={px} cy={py} r={r} fill="#FFFDF8" stroke={COLORS.ink} strokeWidth={2} />
+                    <circle cx={px + dir * 10} cy={py + 4} r={r * 0.7} fill="#FFFDF8" stroke={COLORS.ink} strokeWidth={1.8} />
+                  </g>
+                );
+              })}
+            </svg>
+          )}
 
           {frame >= 430 && frame <= 452 && (
             <ComicStampText

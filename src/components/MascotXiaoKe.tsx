@@ -16,9 +16,17 @@ interface MascotXiaoKeProps {
   y: number; // center Y in 1280x720 canvas
   mood?: MascotMood;
   scale?: number;
+  /** Squash & stretch anchored at feet (Disney Squash & Stretch) */
+  scaleX?: number;
+  scaleY?: number;
+  /** Body lean angle in degrees (Anticipation / Follow-through) */
+  leanDeg?: number;
+  /** Asymmetric hop amplitude */
   bounce?: number;
-  /** Optional world-space point (x, y) that 小克 stretches his right arm to touch/grab! */
+  /** Optional world-space point (x, y) that 小克 stretches his right arm to touch/grab */
   reachTarget?: { x: number; y: number } | null;
+  /** 0..1 arm extension progress for elastic whip-out & retract */
+  armExtend?: number;
   speech?: string | null;
   showQuestionMark?: boolean;
   celebrateWave?: boolean;
@@ -29,19 +37,41 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
   y,
   mood = 'normal',
   scale = 1,
+  scaleX = 1,
+  scaleY = 1,
+  leanDeg = 0,
   bounce = 0,
   reachTarget = null,
+  armExtend = 1,
   speech = null,
   showQuestionMark = false,
   celebrateWave = false,
 }) => {
   const frame = useCurrentFrame();
-  const dy = bounce * Math.sin(frame * 0.45);
-  const bodyY = y + dy;
+
+  // Asymmetric bounce (faster snap up, crisp contact at bottom)
+  const rawPhase = (frame * 0.42) % (Math.PI * 2);
+  const hop = bounce > 0 ? Math.pow(Math.abs(Math.sin(rawPhase / 2)), 0.72) * bounce : 0;
+  // Subtle alive breathing during moving holds
+  const breathY = 1 + Math.sin(frame * 0.14) * 0.018;
+  const breathX = 1 - Math.sin(frame * 0.14) * 0.012;
+  // Periodic deterministic eye blink during holds (frames 0..2 of every 78 frames)
+  const isBlinking = (mood === 'normal' || mood === 'sweat') && frame % 78 >= 75;
+
+  const bodyY = y - hop;
+  const finalScaleX = scale * scaleX * breathX;
+  const finalScaleY = scale * scaleY * breathY;
 
   // Shoulder anchor for stretchy arm
   const shoulderX = x + 36 * scale;
   const shoulderY = bodyY + 2 * scale;
+
+  const tipX = reachTarget
+    ? shoulderX + (reachTarget.x - shoulderX) * armExtend
+    : shoulderX;
+  const tipY = reachTarget
+    ? shoulderY + (reachTarget.y - shoulderY) * armExtend
+    : shoulderY;
 
   return (
     <div
@@ -52,34 +82,31 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
         zIndex: 30,
       }}
     >
-      {/* Stretchy Arm SVG Layer (full canvas so it can reach anywhere cleanly!) */}
-      {reachTarget && (
+      {/* Stretchy Arm SVG Layer */}
+      {reachTarget && armExtend > 0.04 && (
         <svg
           width={1280}
           height={720}
           viewBox="0 0 1280 720"
           style={{ position: 'absolute', inset: 0, filter: 'url(#hand-drawn-soft)' }}
         >
-          {/* Outer ink stroke */}
           <path
-            d={`M ${shoulderX} ${shoulderY} Q ${(shoulderX + reachTarget.x) / 2} ${Math.min(shoulderY, reachTarget.y) - 18} ${reachTarget.x} ${reachTarget.y}`}
+            d={`M ${shoulderX} ${shoulderY} Q ${(shoulderX + tipX) / 2} ${Math.min(shoulderY, tipY) - 24 * armExtend} ${tipX} ${tipY}`}
             fill="none"
             stroke={COLORS.ink}
             strokeWidth={13}
             strokeLinecap="round"
           />
-          {/* Inner coral fill */}
           <path
-            d={`M ${shoulderX} ${shoulderY} Q ${(shoulderX + reachTarget.x) / 2} ${Math.min(shoulderY, reachTarget.y) - 18} ${reachTarget.x} ${reachTarget.y}`}
+            d={`M ${shoulderX} ${shoulderY} Q ${(shoulderX + tipX) / 2} ${Math.min(shoulderY, tipY) - 24 * armExtend} ${tipX} ${tipY}`}
             fill="none"
             stroke={COLORS.coral}
             strokeWidth={8}
             strokeLinecap="round"
           />
-          {/* Little hand nub at target */}
           <circle
-            cx={reachTarget.x}
-            cy={reachTarget.y}
+            cx={tipX}
+            cy={tipY}
             r={7}
             fill={COLORS.coral}
             stroke={COLORS.ink}
@@ -88,13 +115,14 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
         </svg>
       )}
 
-      {/* Character Body */}
+      {/* Character Body (pivoted at feet for grounded squash & stretch) */}
       <div
         style={{
           position: 'absolute',
           left: x,
           top: bodyY,
-          transform: `translate(-50%, -50%) scale(${scale})`,
+          transform: `translate(-50%, -50%) rotate(${leanDeg}deg) scale(${finalScaleX}, ${finalScaleY})`,
+          transformOrigin: '50% 82%',
           filter: 'url(#hand-drawn-soft)',
         }}
       >
@@ -118,7 +146,7 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
           />
 
           {/* Right arm (normal or raised wave when not reaching) */}
-          {!reachTarget && !celebrateWave && (
+          {(!reachTarget || armExtend <= 0.04) && !celebrateWave && (
             <rect
               x={36}
               y={-4}
@@ -145,7 +173,6 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
                 strokeWidth={7.5}
                 strokeLinecap="round"
               />
-              {/* Sparkle next to raised hand */}
               <path
                 d="M54 -36 L56 -30 L62 -28 L56 -26 L54 -20 L52 -26 L46 -28 L52 -30 Z"
                 fill="#FFFDF0"
@@ -172,7 +199,6 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
             <>
               <line x1={-16} y1={-4} x2={-8} y2={-4} stroke={COLORS.ink} strokeWidth={2.8} strokeLinecap="round" />
               <line x1={8} y1={-4} x2={16} y2={-4} stroke={COLORS.ink} strokeWidth={2.8} strokeLinecap="round" />
-              {/* Snot bubble */}
               <circle
                 cx={2}
                 cy={12}
@@ -186,10 +212,17 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
           )}
 
           {mood === 'normal' && (
-            <>
-              <rect x={-14} y={-11} width={5} height={13} rx={2} fill={COLORS.ink} />
-              <rect x={9} y={-11} width={5} height={13} rx={2} fill={COLORS.ink} />
-            </>
+            isBlinking ? (
+              <>
+                <line x1={-16} y1={-4} x2={-8} y2={-4} stroke={COLORS.ink} strokeWidth={2.8} strokeLinecap="round" />
+                <line x1={8} y1={-4} x2={16} y2={-4} stroke={COLORS.ink} strokeWidth={2.8} strokeLinecap="round" />
+              </>
+            ) : (
+              <>
+                <rect x={-14} y={-11} width={5} height={13} rx={2} fill={COLORS.ink} />
+                <rect x={9} y={-11} width={5} height={13} rx={2} fill={COLORS.ink} />
+              </>
+            )
           )}
 
           {mood === 'happy' && (
@@ -220,11 +253,19 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
 
           {mood === 'sweat' && (
             <>
-              <rect x={-14} y={-9} width={5} height={11} rx={2} fill={COLORS.ink} />
-              <rect x={9} y={-9} width={5} height={11} rx={2} fill={COLORS.ink} />
-              {/* Blue sweat drop */}
+              {isBlinking ? (
+                <>
+                  <line x1={-16} y1={-4} x2={-8} y2={-4} stroke={COLORS.ink} strokeWidth={2.6} strokeLinecap="round" />
+                  <line x1={8} y1={-4} x2={16} y2={-4} stroke={COLORS.ink} strokeWidth={2.6} strokeLinecap="round" />
+                </>
+              ) : (
+                <>
+                  <rect x={-14} y={-9} width={5} height={11} rx={2} fill={COLORS.ink} />
+                  <rect x={9} y={-9} width={5} height={11} rx={2} fill={COLORS.ink} />
+                </>
+              )}
               <path
-                d={`M29 ${-18 + (frame % 16) * 0.6} Q35 -8 29 -4 Q23 -8 29 ${-18 + (frame % 16) * 0.6} Z`}
+                d={`M29 ${-18 + (frame % 16) * 0.65} Q35 -8 29 -4 Q23 -8 29 ${-18 + (frame % 16) * 0.65} Z`}
                 fill="#7EC8F2"
                 stroke={COLORS.ink}
                 strokeWidth={1.6}
@@ -234,7 +275,6 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
 
           {mood === 'cool' && (
             <>
-              {/* Sunglasses perched on top of head */}
               <g transform="translate(0, -28)">
                 <rect x={-26} y={-6} width={22} height={12} rx={3} fill="#1E1B18" stroke="#FFF" strokeWidth={1.2} />
                 <rect x={4} y={-6} width={22} height={12} rx={3} fill="#1E1B18" stroke="#FFF" strokeWidth={1.2} />
@@ -242,7 +282,6 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
                 <line x1={-21} y1={-3} x2={-15} y2={2} stroke="#FFF" strokeWidth={1.6} opacity={0.65} />
                 <line x1={9} y1={-3} x2={15} y2={2} stroke="#FFF" strokeWidth={1.6} opacity={0.65} />
               </g>
-              {/* Winking face */}
               <rect x={-14} y={-10} width={5} height={12} rx={2} fill={COLORS.ink} />
               <path d="M6 -3 Q12 -10 18 -3" fill="none" stroke={COLORS.ink} strokeWidth={3} strokeLinecap="round" />
               <ellipse cx={-23} cy={6} rx={6} ry={3.5} fill="#F59BB3" opacity={0.85} />
@@ -250,7 +289,6 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
             </>
           )}
 
-          {/* Question Mark overhead */}
           {showQuestionMark && (
             <text
               x={0}
@@ -268,7 +306,6 @@ export const MascotXiaoKe: React.FC<MascotXiaoKeProps> = ({
           )}
         </svg>
 
-        {/* Speech Bubble */}
         {speech && (
           <div
             style={{

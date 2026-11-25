@@ -1,6 +1,14 @@
 import React from 'react';
-import { Audio, staticFile, useCurrentFrame } from 'remotion';
-import { COLORS, easeInOutCubic, easeOutCubic, prog } from './theme';
+import { useCurrentFrame } from 'remotion';
+import {
+  COLORS,
+  TIMING,
+  easeInOutCubic,
+  easeOutBack,
+  easeOutCubic,
+  microShake,
+  prog,
+} from './theme';
 import { PaperDefs } from './components/PaperDefs';
 import { IntroTerminal } from './components/IntroTerminal';
 import { TopBar } from './components/TopBar';
@@ -11,6 +19,7 @@ import { Timeline } from './components/Timeline';
 import { MascotMood, MascotXiaoKe } from './components/MascotXiaoKe';
 import { ComicFX } from './components/ComicFX';
 import { OutroNote } from './components/OutroNote';
+import { SoundTrack } from './components/SoundTrack';
 
 export const MainVideo: React.FC = () => {
   const frame = useCurrentFrame();
@@ -226,17 +235,38 @@ export const MainVideo: React.FC = () => {
   const beatPulse =
     beatMarkersCount > 0 ? Math.max(0, 1 - ((frame % 15) / 6)) : 0;
 
-  // ---- 7. MASCOT 小克 CHOREOGRAPHY ----
+  // Deterministic impact micro-shake (Disney Weight & Impact)
+  const shakes = [
+    microShake(frame, TIMING.TRASH_IMPACT, 10, 7),
+    microShake(frame, TIMING.CTRLZ_STOMP, 10, 8),
+    microShake(frame, TIMING.STAMP_FIXED, 8, 5),
+    microShake(frame, TIMING.SAT_FRIED, 18, 6),
+    microShake(frame, TIMING.EXPORT_DING, 10, 5),
+  ];
+  const shakeX = shakes.reduce((a, s) => a + s.x, 0);
+  const shakeY = shakes.reduce((a, s) => a + s.y, 0);
+
+  // ---- 7. MASCOT 小克 CHOREOGRAPHY (Disney Squash/Stretch, Anticipation, Arcs) ----
   let mascotX = 210;
   let mascotY = 445;
   let mascotMood: MascotMood = 'normal';
+  let mascotScaleX = 1;
+  let mascotScaleY = 1;
+  let mascotLean = 0;
   let mascotBounce = 0;
   let reachTarget: { x: number; y: number } | null = null;
+  let armExtend = 1;
   let speech: string | null = null;
   let showQuestionMark = false;
   let celebrateWave = false;
 
-  if (frame < 56) {
+  const whip = (start: number, end: number) => {
+    const pIn = easeOutBack(prog(frame, start, start + 6));
+    const pOut = easeOutCubic(prog(frame, end - 4, end));
+    return Math.max(0, Math.min(1.08, pIn * (1 - pOut)));
+  };
+
+  if (frame < 54) {
     mascotX = 205;
     mascotY = 450;
     mascotMood = 'sleep';
@@ -244,16 +274,24 @@ export const MainVideo: React.FC = () => {
     mascotX = 205;
     mascotY = 446;
     mascotMood = 'normal';
-    mascotBounce = 3;
+    mascotBounce = 4;
     if (frame < 72) {
       speech = '开工！';
       reachTarget = { x: 88, y: 146 };
+      armExtend = whip(54, 72);
+      mascotLean = -4 * armExtend;
     } else if (frame < 92) {
       reachTarget = { x: 204, y: 146 };
+      armExtend = whip(72, 92);
+      mascotLean = -3 * armExtend;
     } else if (frame < 110) {
       reachTarget = { x: 88, y: 230 };
+      armExtend = whip(92, 110);
+      mascotLean = -3 * armExtend;
     } else if (frame < 126) {
       reachTarget = { x: 204, y: 230 };
+      armExtend = whip(110, 126);
+      mascotLean = -3 * armExtend;
     }
   } else if (frame < 236) {
     mascotX = 240;
@@ -261,79 +299,122 @@ export const MainVideo: React.FC = () => {
     if (frame >= 168 && frame < 196) {
       speech = '这段在发呆 zzz';
       reachTarget = { x: 515, y: 505 };
+      armExtend = whip(168, 196);
+      mascotLean = 5 * armExtend;
     } else if (frame >= 196 && frame < 224) {
       mascotMood = 'happy';
-      mascotBounce = 6;
+      mascotBounce = 7;
     }
   } else if (frame < 342) {
     mascotX = 236;
     mascotY = 446;
     mascotMood = 'happy';
     if (frame >= 232 && frame < 246) {
-      reachTarget = { x: 146, y: 96 }; // click 转场 tab
+      reachTarget = { x: 146, y: 96 };
+      armExtend = whip(232, 246);
+      mascotLean = -5 * armExtend;
     } else if (frame >= 250 && frame < 264) {
       reachTarget = { x: 88, y: 158 };
+      armExtend = whip(250, 264);
+      mascotLean = -6 * armExtend;
     } else if (frame >= 280 && frame < 292) {
       reachTarget = { x: 204, y: 158 };
+      armExtend = whip(280, 292);
+      mascotLean = -5 * armExtend;
     }
   } else if (frame < 472) {
-    // Subtitle & Ctrl+Z gag
+    // 5-Phase Disney Jump onto Ctrl+Z:
+    // 422-426 Anticipation crouch -> 426-430 Launch stretch + arc -> 430-432 Apex -> 432-442 Stomp squash -> 442-450 Recovery jump back
     mascotX = 290;
-    mascotY = frame >= 428 && frame <= 444 ? 548 : 446;
-    if (frame >= 398 && frame < 424) {
+    mascotY = 446;
+    if (frame >= 398 && frame < 422) {
       mascotMood = 'lookup';
       showQuestionMark = true;
-    } else if (frame >= 424 && frame < 448) {
+    } else if (frame >= 422 && frame < 426) {
+      // Phase 1: Anticipation crouch (grounded squash)
+      const p = prog(frame, 422, 426);
+      mascotScaleX = 1 + 0.22 * p;
+      mascotScaleY = 1 - 0.22 * p;
+      mascotLean = -6 * p;
+    } else if (frame >= 426 && frame < 432) {
+      // Phase 2 & 3: Launch stretch up in an arc then dive down onto Ctrl+Z
+      const p = prog(frame, 426, 432);
+      const arc = Math.sin(p * Math.PI) * 58;
+      mascotY = 446 + p * 102 - arc;
+      mascotScaleX = 0.84;
+      mascotScaleY = 1.24;
+      mascotLean = 10 * (1 - p);
+    } else if (frame >= 432 && frame < 444) {
+      // Phase 4: Stomp impact squash & rebound settle on Ctrl+Z
+      const p = prog(frame, 432, 440);
+      const squash = Math.exp(-p * 3.5) * Math.cos(p * Math.PI * 1.5);
+      mascotY = 548;
+      mascotScaleX = 1 + 0.28 * Math.max(0, squash);
+      mascotScaleY = 1 - 0.26 * Math.max(0, squash);
       mascotMood = 'normal';
-      mascotBounce = 8;
-    } else if (frame >= 448) {
+    } else if (frame >= 444 && frame < 452) {
+      // Phase 5: Hop back up onto timeline
+      const p = easeOutCubic(prog(frame, 444, 452));
+      mascotY = 548 - p * 102 - Math.sin(p * Math.PI) * 34;
+      mascotScaleX = 0.9 + 0.1 * p;
+      mascotScaleY = 1.12 - 0.12 * p;
+      mascotMood = 'happy';
+    } else if (frame >= 452) {
       mascotMood = 'happy';
     }
   } else if (frame < 596) {
-    // Reaching over to right sliders!
     mascotX = 430;
     mascotY = 448;
     if (frame >= 480 && frame < 506) {
       reachTarget = { x: 1018 + (sparkle / 100) * 218, y: 156 };
+      armExtend = easeOutBack(prog(frame, 480, 486));
+      mascotLean = 6;
     } else if (frame >= 506 && frame < 554) {
       reachTarget = { x: 1018 + Math.min(1, saturation / 200) * 218, y: 215 };
+      armExtend = 1;
+      mascotLean = 8;
       if (saturation >= 175) {
         mascotMood = 'shocked';
         mascotBounce = 9;
+        mascotScaleX = 1.08 + Math.sin(frame * 1.8) * 0.06;
+        mascotScaleY = 0.92 - Math.sin(frame * 1.8) * 0.06;
       }
     } else if (frame >= 556 && frame < 588) {
       reachTarget = { x: 1018 + (zoomImpact / 100) * 218, y: 274 };
+      armExtend = whip(556, 588);
+      mascotLean = 6 * armExtend;
       mascotMood = 'happy';
     }
   } else if (frame < 710) {
-    // Pressing Beat Sync & bouncing along!
     mascotX = frame < 642 ? 520 : 520 + prog(frame, 642, 706) * 320;
     mascotY = 446;
     mascotMood = 'happy';
-    mascotBounce = frame >= 634 ? 10 : 4;
+    mascotBounce = frame >= 634 ? 12 : 4;
     if (frame >= 614 && frame < 638) {
-      reachTarget = { x: 1178, y: 598 }; // ▼ 卡点 button
+      reachTarget = { x: 1178, y: 598 };
+      armExtend = whip(614, 638);
+      mascotLean = 7 * armExtend;
     }
   } else if (frame < 798) {
-    // Export button click & 99.99% sweat wait
     mascotX = 836;
     mascotY = 446;
     if (frame >= 712 && frame < 730) {
-      reachTarget = { x: 1164, y: 38 }; // ↑ 导出 button
+      reachTarget = { x: 1164, y: 38 };
+      armExtend = whip(712, 730);
+      mascotLean = 6 * armExtend;
     } else if (frame >= 746 && frame < 780) {
       mascotMood = 'sweat';
       speech = '...';
     } else if (frame >= 780) {
       mascotMood = 'happy';
-      mascotBounce = 12;
+      mascotBounce = 14;
       celebrateWave = true;
     }
   } else {
-    // Outro cool pose!
     mascotX = 1020;
     mascotY = 540;
     mascotMood = 'cool';
-    mascotBounce = 4;
+    mascotBounce = 5;
     celebrateWave = true;
   }
 
@@ -366,12 +447,12 @@ export const MainVideo: React.FC = () => {
         }}
       />
 
-      {/* Main Editor Canvas (Camera Zoom/Pan applied here) */}
+      {/* Main Editor Canvas (Camera Zoom/Pan + Impact Micro-Shake applied here) */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          transform: `translate(${camX}px, ${camY}px) scale(${camScale})`,
+          transform: `translate(${camX + shakeX}px, ${camY + shakeY}px) scale(${camScale})`,
           transformOrigin: 'center center',
           opacity: frame < 34 ? 0 : isOutro ? 0.36 : 1,
           zIndex: 10,
@@ -424,8 +505,12 @@ export const MainVideo: React.FC = () => {
             x={mascotX}
             y={mascotY}
             mood={mascotMood}
+            scaleX={mascotScaleX}
+            scaleY={mascotScaleY}
+            leanDeg={mascotLean}
             bounce={mascotBounce}
             reachTarget={reachTarget}
+            armExtend={armExtend}
             speech={speech}
             showQuestionMark={showQuestionMark}
             celebrateWave={celebrateWave}
@@ -476,8 +561,8 @@ export const MainVideo: React.FC = () => {
       {/* Intro Code Terminal (00:00 - 00:01.5) */}
       <IntroTerminal />
 
-      {/* Original Procedural Soundtrack */}
-      <Audio src={staticFile('audio/soundtrack.wav')} volume={0.9} />
+      {/* Clean Procedural BGM Bed + Frame-Synced CC0 Freesound SFX */}
+      <SoundTrack />
     </div>
   );
 };

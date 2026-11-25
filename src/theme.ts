@@ -3,6 +3,36 @@ export const VIDEO_HEIGHT = 720;
 export const VIDEO_FPS = 30;
 export const TOTAL_FRAMES = 900; // 30.00s
 
+/**
+ * Single source of truth for all visual & audio sync cues (in frames @ 30fps).
+ * Both animation choreography and Freesound <Sequence> SFX read from TIMING.
+ */
+export const TIMING = {
+  INTRO_TYPE_START: 2,
+  UI_UNFOLD: 32,
+  CLIP_DROP_1: 68,
+  CLIP_DROP_2: 88,
+  CLIP_DROP_3: 106,
+  CLIP_DROP_4: 122,
+  BGM_DROP: 128,
+  BLUR_SNIP: 196,
+  TRASH_IMPACT: 215,
+  THROW_1: 254,
+  THROW_2: 282,
+  THROW_3: 308,
+  TYPO_QUESTION: 398,
+  CTRLZ_ANTICIPATE: 422,
+  CTRLZ_LAUNCH: 426,
+  CTRLZ_STOMP: 432,
+  STAMP_FIXED: 448,
+  SAT_FRIED: 514,
+  BEAT_SYNC_PRESS: 626,
+  BEAT_CASCADE_START: 634,
+  EXPORT_CLICK: 718,
+  EXPORT_DING: 780,
+  OUTRO_NOTE_POP: 798,
+} as const;
+
 export const COLORS = {
   paper: '#F7F3E8',
   paperDark: '#EFE9D9',
@@ -73,4 +103,22 @@ export function easeOutBack(t: number): number {
 export function prog(frame: number, start: number, end: number): number {
   if (end <= start) return frame >= start ? 1 : 0;
   return clamp01((frame - start) / (end - start));
+}
+
+/**
+ * Deterministic damped micro-shake for physical impact weight (Disney Weight & Impact).
+ */
+export function microShake(
+  frame: number,
+  impactFrame: number,
+  duration = 10,
+  amplitude = 6
+): { x: number; y: number } {
+  const dt = frame - impactFrame;
+  if (dt < 0 || dt > duration) return { x: 0, y: 0 };
+  const decay = Math.pow(1 - dt / duration, 2);
+  return {
+    x: Math.sin(dt * 2.9) * amplitude * decay,
+    y: Math.cos(dt * 3.7) * amplitude * 0.75 * decay,
+  };
 }
