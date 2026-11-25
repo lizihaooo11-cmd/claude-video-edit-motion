@@ -1,0 +1,24 @@
+{
+  "name": "claude-video-edit-motion",
+  "version": "1.0.0",
+  "description": "Remotion recreation of the 30-second hand-drawn '小克剪辑' (Claude Video Editing Process) motion graphic",
+  "private": false,
+  "scripts": {
+    "dev": "remotion studio src/index.ts",
+    "studio": "remotion studio src/index.ts",
+    "generate-audio": "node scripts/generate-audio.mjs",
+    "render": "remotion render src/index.ts ClaudeVideoEditMotion out/claude-video-edit-motion.mp4",
+    "build": "npm run generate-audio && npm run render",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.242",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.242"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "typescript": "^5.6.3"
+  }
+}
